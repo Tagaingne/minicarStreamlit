@@ -1,9 +1,8 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, height=device-height;">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, height=device-height;">
     <title>ControlCar</title>
     <style>
         body {
@@ -16,18 +15,19 @@
             background: linear-gradient(to bottom right, blue, red);
         }
         #joystick-container {
-            width: 200px;
-            height: 200px;
+            width: 50vmin;
+            height: 50vmin;
             background: rgba(255, 0, 0, 0.3);
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
             margin-top: 20px;
+            touch-action: none;
         }
         #joystick {
-            width: 50px;
-            height: 50px;
+            width: 12.5vmin;
+            height: 12.5vmin;
             background: white;
             border-radius: 50%;
             position: relative;
@@ -41,7 +41,7 @@
     </style>
 </head>
 <body>
-    <img class="shrinkToFit" src='http://192.168.204.90:7000' alt="Minicar Image" width="400" height="296">
+    <img class="shrinkToFit" src='http://192.168.204.90:7000' alt="Image de la Minicar" width="400" height="296">
     <div id="joystick-container">
         <div id="joystick"></div>
     </div>
@@ -51,7 +51,7 @@
         let lastX = 0;
         let lastY = 0;
         let isStopped = false;
-        let sendInterval = 100; // 0.1 second
+        let sendInterval = 100; // 0,1 seconde
         let ws;
 
         function setupWebSocket() {
@@ -61,25 +61,25 @@
                 try {
                     let message = JSON.parse(event.data);
                     if (message.cmd === 9 && message.data === 1) {
-                        // Handle camera activation or other actions
+                        // Gérer l'activation de la caméra ou d'autres actions
                     } else {
-                        // Handle other JSON messages if necessary
+                        // Gérer d'autres messages JSON si nécessaire
                     }
                 } catch (e) {
-                    console.log('Error decoding JSON:', e);
-                    console.log('Received message:', event.data);
+                    console.log('Erreur de décodage JSON:', e);
+                    console.log('Message reçu:', event.data);
                 }
             };
 
             ws.onerror = (error) => {
-                console.log('WebSocket error:', error);
+                console.log('Erreur WebSocket:', error);
             };
 
             ws.onclose = () => {
-                console.log('WebSocket closed');
+                console.log('WebSocket fermé');
                 setTimeout(() => {
                     if (ws.readyState === WebSocket.CLOSED) {
-                        setupWebSocket(); // Retry connection
+                        setupWebSocket(); // Réessayer la connexion
                     }
                 }, 5000);
             };
@@ -123,8 +123,14 @@
             let rect = container.getBoundingClientRect();
             let centerX = rect.width / 2;
             let centerY = rect.height / 2;
-            let x = event.clientX - rect.left - centerX;
-            let y = event.clientY - rect.top - centerY;
+            let x, y;
+            if (event.touches) {
+                x = event.touches[0].clientX - rect.left - centerX;
+                y = event.touches[0].clientY - rect.top - centerY;
+            } else {
+                x = event.clientX - rect.left - centerX;
+                y = event.clientY - rect.top - centerY;
+            }
             let radius = Math.min(centerX, centerY);
             let distance = Math.min(Math.sqrt(x * x + y * y), radius);
             let angle = Math.atan2(y, x);
@@ -133,13 +139,25 @@
             joystick.style.transform = `translate(${lastX * radius}px, ${lastY * radius}px)`;
         }
 
+        function resetJoystick() {
+            lastX = 0;
+            lastY = 0;
+            joystick.style.transform = 'translate(0, 0)';
+        }
+
         joystick.addEventListener('mousedown', (event) => {
             document.addEventListener('mousemove', onJoystickMove);
             document.addEventListener('mouseup', () => {
                 document.removeEventListener('mousemove', onJoystickMove);
-                lastX = 0;
-                lastY = 0;
-                joystick.style.transform = 'translate(0, 0)';
+                resetJoystick();
+            }, { once: true });
+        });
+
+        joystick.addEventListener('touchstart', (event) => {
+            document.addEventListener('touchmove', onJoystickMove);
+            document.addEventListener('touchend', () => {
+                document.removeEventListener('touchmove', onJoystickMove);
+                resetJoystick();
             }, { once: true });
         });
 

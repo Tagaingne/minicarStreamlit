@@ -1,3 +1,7 @@
+import streamlit as st
+
+# HTML et CSS pour l'interface utilisateur
+html_code = """
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -166,3 +170,7 @@
     </script>
 </body>
 </html>
+"""
+
+# Utilisation de Streamlit pour afficher le HTML
+st.components.v1.html(html_code, height=800, scrolling=True)

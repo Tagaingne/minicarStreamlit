@@ -5,7 +5,7 @@ def main():
     st.title("MINICAR")
 
     # Charger le contenu HTML depuis le fichier controlcar.html
-    with open('controlcar.html', 'r', encoding='utf-8') as f:
+    with open('controlCar.html', 'r', encoding='utf-8') as f:
         controlcar_html = f.read()
 
     # Afficher le contenu HTML dans Streamlit
